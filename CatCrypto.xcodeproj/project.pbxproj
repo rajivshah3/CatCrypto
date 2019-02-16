@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		60A3627422188F3900E573D2 /* HashingWithPointers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60A3627322188F3900E573D2 /* HashingWithPointers.swift */; };
 		C31E52FC1FE906B2004C1F12 /* md6_mode.c in Sources */ = {isa = PBXBuildFile; fileRef = C31E52EB1FE906B2004C1F12 /* md6_mode.c */; };
 		C31E52FD1FE906B2004C1F12 /* md6_mode.c in Sources */ = {isa = PBXBuildFile; fileRef = C31E52EB1FE906B2004C1F12 /* md6_mode.c */; };
 		C31E52FE1FE906B2004C1F12 /* md6_mode.c in Sources */ = {isa = PBXBuildFile; fileRef = C31E52EB1FE906B2004C1F12 /* md6_mode.c */; };
@@ -121,6 +122,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		60A3627322188F3900E573D2 /* HashingWithPointers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HashingWithPointers.swift; sourceTree = "<group>"; };
 		C31E52EB1FE906B2004C1F12 /* md6_mode.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = md6_mode.c; sourceTree = "<group>"; };
 		C31E52EC1FE906B2004C1F12 /* md6.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = md6.h; sourceTree = "<group>"; };
 		C31E52ED1FE906B2004C1F12 /* md6_compress.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = md6_compress.c; sourceTree = "<group>"; };
@@ -322,6 +324,7 @@
 			children = (
 				C3D6DD291FF39FFE0005C3D1 /* Contextual.swift */,
 				C39EDD671FECF6440081108F /* Hashing.swift */,
+				60A3627322188F3900E573D2 /* HashingWithPointers.swift */,
 				C39EDD711FECF95C0081108F /* Verification.swift */,
 				C38A78F32003C01C0028D981 /* Encryption.swift */,
 				C38A78F82003C2260028D981 /* Decryption.swift */,
@@ -568,7 +571,7 @@
 					C330B4951FDE93AB005AEECC = {
 						CreatedOnToolsVersion = 9.1;
 						LastSwiftMigration = 1000;
-						ProvisioningStyle = Automatic;
+						ProvisioningStyle = Manual;
 					};
 					C3945E841FE3CBAE009A203D = {
 						CreatedOnToolsVersion = 9.1;
@@ -682,6 +685,7 @@
 				C31E52FC1FE906B2004C1F12 /* md6_mode.c in Sources */,
 				C36729111FF496D4005BE1A8 /* Crypto.swift in Sources */,
 				C3BDFE181FFE6D6300E060F6 /* KeccakSpongeWidth1600.c in Sources */,
+				60A3627422188F3900E573D2 /* HashingWithPointers.swift in Sources */,
 				C39EDD771FECF9D00081108F /* Argon.swift in Sources */,
 				C39EDD721FECF95C0081108F /* Verification.swift in Sources */,
 				C330B4C91FDE94E9005AEECC /* blake2b.c in Sources */,

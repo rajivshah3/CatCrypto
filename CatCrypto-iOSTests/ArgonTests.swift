@@ -19,15 +19,19 @@ class ArgonTests: XCTestCase {
     }
 
     func testNormalHashing() {
-        let password = "Hi CatCrypto!"
+        let password = "Hi CatCrypto?"
+        let pointer = UnsafeMutablePointer<[CChar]>.allocate(capacity: password.lengthOfBytes(using: .utf8))
+        pointer.initialize(to: password.cString(using: .utf8)!)
         argon2Crypto.context = CatArgon2Context()
-        XCTAssertNotNil(argon2Crypto.hash(password: password).value)
+        XCTAssertNotNil(argon2Crypto.hash(passwordPointer: pointer).value)
     }
 
     func testEmptyHashing() {
         let password = ""
+        let pointer = UnsafeMutablePointer<[CChar]>.allocate(capacity: password.lengthOfBytes(using: .utf8))
+        pointer.initialize(to: password.cString(using: .utf8)!)
         argon2Crypto.context = CatArgon2Context()
-        XCTAssertNotNil(argon2Crypto.hash(password: password).value)
+        XCTAssertNotNil(argon2Crypto.hash(passwordPointer: pointer).value)
     }
 
     func testNormalVerification() {
@@ -42,29 +46,35 @@ class ArgonTests: XCTestCase {
 
     func testIterations() {
         let password = "Hi CatCrypto!"
+        let pointer = UnsafeMutablePointer<[CChar]>.allocate(capacity: password.lengthOfBytes(using: .utf8))
+        pointer.initialize(to: password.cString(using: .utf8)!)
         argon2Crypto.context = CatArgon2Context()
         argon2Crypto.context.iterations = 0
-        XCTAssertNotNil(argon2Crypto.hash(password: password).value)
+        XCTAssertNotNil(argon2Crypto.hash(passwordPointer: pointer).value)
         argon2Crypto.context.iterations = 2 << 33
-        XCTAssertNotNil(argon2Crypto.hash(password: password).value)
+        XCTAssertNotNil(argon2Crypto.hash(passwordPointer: pointer).value)
     }
 
     func testMemery() {
         let password = "Hi CatCrypto!"
+        let pointer = UnsafeMutablePointer<[CChar]>.allocate(capacity: password.lengthOfBytes(using: .utf8))
+        pointer.initialize(to: password.cString(using: .utf8)!)
         argon2Crypto.context = CatArgon2Context()
         argon2Crypto.context.memory = 0
-        XCTAssertNotNil(argon2Crypto.hash(password: password).value)
+        XCTAssertNotNil(argon2Crypto.hash(passwordPointer: pointer).value)
         argon2Crypto.context.memory = 2 << 33
-        XCTAssertNotNil(argon2Crypto.hash(password: password).value)
+        XCTAssertNotNil(argon2Crypto.hash(passwordPointer: pointer).value)
     }
 
     func testParallelism() {
         let password = "Hi CatCrypto!"
+        let pointer = UnsafeMutablePointer<[CChar]>.allocate(capacity: password.lengthOfBytes(using: .utf8))
+        pointer.initialize(to: password.cString(using: .utf8)!)
         argon2Crypto.context = CatArgon2Context()
         argon2Crypto.context.parallelism = 0
-        XCTAssertNotNil(argon2Crypto.hash(password: password).value)
+        XCTAssertNotNil(argon2Crypto.hash(passwordPointer: pointer).value)
         argon2Crypto.context.parallelism = 2 << 32
-        XCTAssertNotNil(argon2Crypto.hash(password: password).value)
+        XCTAssertNotNil(argon2Crypto.hash(passwordPointer: pointer).value)
     }
 
     func testMode() {
@@ -78,36 +88,42 @@ class ArgonTests: XCTestCase {
         "0NkU0LTkwQzMtQUU0NzYyOURDMjVB$ZcJqwaBXemTn3+Uxenc0fda9ISSArJANUJhpzK" +
         "iOxdY"
         let password = "Hi CatCrypto!"
+        let pointer = UnsafeMutablePointer<[CChar]>.allocate(capacity: password.lengthOfBytes(using: .utf8))
+        pointer.initialize(to: password.cString(using: .utf8)!)
         argon2Crypto.context = CatArgon2Context()
         argon2Crypto.context.salt = UUID().uuidString
         argon2Crypto.context.mode = .argon2d
-        XCTAssertNotNil(argon2Crypto.hash(password: password).value)
+        XCTAssertNotNil(argon2Crypto.hash(passwordPointer: pointer).value)
         XCTAssertTrue(argon2Crypto.verify(hash: argon2dHash, password: password).value)
         argon2Crypto.context.mode = .argon2i
-        XCTAssertNotNil(argon2Crypto.hash(password: password).value)
+        XCTAssertNotNil(argon2Crypto.hash(passwordPointer: pointer).value)
         XCTAssertTrue(argon2Crypto.verify(hash: argon2iHash, password: password).value)
         argon2Crypto.context.mode = .argon2id
-        XCTAssertNotNil(argon2Crypto.hash(password: password).value)
+        XCTAssertNotNil(argon2Crypto.hash(passwordPointer: pointer).value)
         XCTAssertTrue(argon2Crypto.verify(hash: argon2idHash, password: password).value)
     }
 
     func testSalt() {
         let password = "Hi CatCrypto!"
+        let pointer = UnsafeMutablePointer<[CChar]>.allocate(capacity: password.lengthOfBytes(using: .utf8))
+        pointer.initialize(to: password.cString(using: .utf8)!)
         argon2Crypto.context = CatArgon2Context()
         argon2Crypto.context.salt = ""
-        XCTAssertNil(argon2Crypto.hash(password: password).value)
+        XCTAssertNil(argon2Crypto.hash(passwordPointer: pointer).value)
         argon2Crypto.context.salt = UUID().uuidString
-        XCTAssertNotNil(argon2Crypto.hash(password: password).value)
+        XCTAssertNotNil(argon2Crypto.hash(passwordPointer: pointer).value)
     }
 
     func testHashLength() {
         let password = "Hi CatCrypto!"
+        let pointer = UnsafeMutablePointer<[CChar]>.allocate(capacity: password.lengthOfBytes(using: .utf8))
+        pointer.initialize(to: password.cString(using: .utf8)!)
         argon2Crypto.context = CatArgon2Context()
         argon2Crypto.context.hashLength = 0
-        XCTAssertNotNil(argon2Crypto.hash(password: password).value)
+        XCTAssertNotNil(argon2Crypto.hash(passwordPointer: pointer).value)
         argon2Crypto.context.hashLength = -1
         argon2Crypto.context.hashLength = Int(CUnsignedInt.max) + 1
-        XCTAssertNotNil(argon2Crypto.hash(password: password).value)
+        XCTAssertNotNil(argon2Crypto.hash(passwordPointer: pointer).value)
     }
 
 }

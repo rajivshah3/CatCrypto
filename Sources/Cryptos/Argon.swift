@@ -107,7 +107,7 @@ public struct CatArgon2Context {
 ///
 /// [Argon2](https://github.com/P-H-C/phc-winner-argon2) is the password-hashing function that won the
 /// [Password Hashing Competition (PHC)](https://password-hashing.net/).
-public class CatArgon2Crypto: Contextual, Hashing, Verification {
+public class CatArgon2Crypto: Contextual, HashingWithPointers, Verification {
 
     // MARK: - Contextual
     public typealias Context = CatArgon2Context
@@ -137,9 +137,8 @@ public class CatArgon2Crypto: Contextual, Hashing, Verification {
     ///
     /// - Parameter password: Password string.
     /// - Returns: Return a tuple that include error code and hashed string.
-    func argon2Hash(password: String) -> (errorCode: CInt, hash: String) {
-        let passwordCString = password.cString(using: .utf8)
-        let passwordLength = password.lengthOfBytes(using: .utf8)
+    func argon2Hash(passwordPointer: UnsafeMutablePointer<[CChar]>) -> (errorCode: CInt, hash: String) {
+        let passwordLength = strlen(UnsafePointer(passwordPointer.pointee))
         let saltCString = context.salt.cString(using: .utf8)
         let saltLength = context.salt.lengthOfBytes(using: .utf8)
         let length = context.hashLength
@@ -150,11 +149,11 @@ public class CatArgon2Crypto: Contextual, Hashing, Verification {
         var errorCode: CInt
         switch context.mode {
         case .argon2d:
-            errorCode = argon2d_hash_raw(CUnsignedInt(context.iterations), CUnsignedInt(context.memory), CUnsignedInt(context.parallelism), passwordCString, passwordLength, saltCString, saltLength, result, length)
+            errorCode = argon2d_hash_raw(CUnsignedInt(context.iterations), CUnsignedInt(context.memory), CUnsignedInt(context.parallelism), passwordPointer.pointee, passwordLength, saltCString, saltLength, result, length)
         case .argon2i:
-            errorCode = argon2i_hash_raw(CUnsignedInt(context.iterations), CUnsignedInt(context.memory), CUnsignedInt(context.parallelism), passwordCString, passwordLength, saltCString, saltLength, result, length)
+            errorCode = argon2i_hash_raw(CUnsignedInt(context.iterations), CUnsignedInt(context.memory), CUnsignedInt(context.parallelism), passwordPointer.pointee, passwordLength, saltCString, saltLength, result, length)
         case .argon2id:
-            errorCode = argon2id_hash_raw(CUnsignedInt(context.iterations), CUnsignedInt(context.memory), CUnsignedInt(context.parallelism), passwordCString, passwordLength, saltCString, saltLength, result, length)
+            errorCode = argon2id_hash_raw(CUnsignedInt(context.iterations), CUnsignedInt(context.memory), CUnsignedInt(context.parallelism), passwordPointer.pointee, passwordLength, saltCString, saltLength, result, length)
         }
         let buffer = UnsafeBufferPointer(start: result, count: length)
         let res = Array(buffer).map(String.init).joined(separator: ",")
@@ -178,8 +177,8 @@ public class CatArgon2Crypto: Contextual, Hashing, Verification {
     }
 
     // MARK: - Hashing
-    public func hash(password: String) -> CatCryptoHashResult {
-        let result = argon2Hash(password: password)
+    public func hash(passwordPointer: UnsafeMutablePointer<[CChar]>) -> CatCryptoHashResult {
+        let result = argon2Hash(passwordPointer: passwordPointer)
         let hashResult = CatCryptoHashResult()
         if result.errorCode == 0 {
             hashResult.value = result.hash
