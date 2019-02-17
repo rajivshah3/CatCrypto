@@ -37,6 +37,13 @@ public class CatCryptoHashResult: CatCryptoResult {
 
 }
 
+/// Hash result class, include a UInt8 Array value
+public class CatCryptoArrayHashResult: CatCryptoResult {
+    
+    /// Hashed value
+    public var value: [UInt8]?
+}
+
 /// Verify result class, include a boolean value.
 public class CatCryptoVerifyResult: CatCryptoResult {
 

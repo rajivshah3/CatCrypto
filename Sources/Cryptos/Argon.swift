@@ -137,7 +137,7 @@ public class CatArgon2Crypto: Contextual, HashingWithPointers, Verification {
     ///
     /// - Parameter password: Password string.
     /// - Returns: Return a tuple that include error code and hashed string.
-    func argon2Hash(passwordPointer: UnsafeMutablePointer<[CChar]>) -> (errorCode: CInt, hash: String) {
+    func argon2Hash(passwordPointer: UnsafeMutablePointer<[CChar]>) -> (errorCode: CInt, hash: [UInt8]) {
         let passwordLength = strlen(UnsafePointer(passwordPointer.pointee))
         let saltCString = context.salt.cString(using: .utf8)
         let saltLength = context.salt.lengthOfBytes(using: .utf8)
@@ -156,7 +156,7 @@ public class CatArgon2Crypto: Contextual, HashingWithPointers, Verification {
             errorCode = argon2id_hash_raw(CUnsignedInt(context.iterations), CUnsignedInt(context.memory), CUnsignedInt(context.parallelism), passwordPointer.pointee, passwordLength, saltCString, saltLength, result, length)
         }
         let buffer = UnsafeBufferPointer(start: result, count: length)
-        let res = Array(buffer).map(String.init).joined(separator: ",")
+        let res = Array(buffer)
         return (errorCode, res)
     }
 
@@ -177,9 +177,9 @@ public class CatArgon2Crypto: Contextual, HashingWithPointers, Verification {
     }
 
     // MARK: - Hashing
-    public func hash(passwordPointer: UnsafeMutablePointer<[CChar]>) -> CatCryptoHashResult {
+    public func hash(passwordPointer: UnsafeMutablePointer<[CChar]>) -> CatCryptoArrayHashResult {
         let result = argon2Hash(passwordPointer: passwordPointer)
-        let hashResult = CatCryptoHashResult()
+        let hashResult = CatCryptoArrayHashResult()
         if result.errorCode == 0 {
             hashResult.value = result.hash
         } else {

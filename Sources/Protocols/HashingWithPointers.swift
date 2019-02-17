@@ -28,6 +28,6 @@ public protocol HashingWithPointers {
     ///
     /// - Parameter password: Password string for hash.
     /// - Returns: Return a hashed result when hashing task finish.
-    func hash(passwordPointer: UnsafeMutablePointer<[CChar]>) -> CatCryptoHashResult
+    func hash(passwordPointer: UnsafeMutablePointer<[CChar]>) -> CatCryptoArrayHashResult
 
 }
