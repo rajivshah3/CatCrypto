@@ -24,15 +24,15 @@ import Argon2
 
 /// `CatArgon2Mode` has three mode to use: `Argon2i`, `Argon2d`, and `Argon2id`. `Argon2i` is recommend.
 public enum CatArgon2Mode: Int {
-
+    
     /// Argon2d is faster and uses data-depending memory access, which makes it highly resistant against GPU cracking attacks and suitable for
     /// applications with no threats from side-channel timing attacks.
     case argon2d = 0
-
+    
     /// Argon2i instead uses data-independent memory access, which is preferred for password hashing and password-based key derivation, but it is
     /// slower as it makes more passes over the memory to protect from tradeoff attacks.
     case argon2i = 1
-
+    
     /// Argon2id is a hybrid of Argon2i and Argon2d, using a combination of data-depending and data-independent memory accesses, which gives some of
     /// Argon2i's resistance to side-channel cache timing attacks and much of Argon2d's resistance to GPU cracking attacks.
     case argon2id = 2
@@ -56,7 +56,7 @@ let argon2MaxHashLength = Int(UInt32.max)
 
 /// Context for Argon2 crypto.
 public class CatArgon2Context {
-
+    
     /// Number of iterations.
     public var iterations: Int = argon2DefaultIterations {
         didSet {
@@ -65,7 +65,7 @@ public class CatArgon2Context {
             }
         }
     }
-
+    
     /// Memory usage.
     public var memory: Int = argon2DefaultMemory {
         didSet {
@@ -74,7 +74,7 @@ public class CatArgon2Context {
             }
         }
     }
-
+    
     /// Number of threads and compute lanes.
     public var parallelism: Int = argon2DefaultParallelism {
         didSet {
@@ -83,13 +83,13 @@ public class CatArgon2Context {
             }
         }
     }
-
+    
     /// The mode of Argon2.
     public var mode: CatArgon2Mode = .argon2i
-
+    
     /// String to salt.
     public var salt: String = "somesalt"
-
+    
     /// Desired length of the hash.
     public var hashLength: Int = argon2DefaultHashLength {
         didSet {
@@ -98,7 +98,7 @@ public class CatArgon2Context {
             }
         }
     }
-
+    
     /// Initialize the context.
     public init() {}
 }
@@ -108,17 +108,17 @@ public class CatArgon2Context {
 /// [Argon2](https://github.com/P-H-C/phc-winner-argon2) is the password-hashing function that won the
 /// [Password Hashing Competition (PHC)](https://password-hashing.net/).
 public class CatArgon2Crypto: Contextual, Hashing, Verification {
-
+    
     // MARK: - Contextual
     public typealias Context = CatArgon2Context
-
+    
     /// Context for the crypto.
     public var context: CatArgon2Context = CatArgon2Context()
-
+    
     public required init(context: Context = CatArgon2Context()) {
         self.context = context
     }
-
+    
     // MARK: - Core
     /// Returns the encoded hash length.
     ///
@@ -132,7 +132,7 @@ public class CatArgon2Crypto: Contextual, Hashing, Verification {
                                  UInt32(context.hashLength),
                                  argon2_type(rawValue: UInt32(context.mode.rawValue)))
     }
-
+    
     /// Hash with Argon2 function.
     ///
     /// - Parameter password: Password string.
@@ -158,29 +158,31 @@ public class CatArgon2Crypto: Contextual, Hashing, Verification {
         }
         return (errorCode, result.map { UInt8($0) })
     }
-
+    
     func argon2Hash_raw(password: String) -> (errorCode: Int32, output: [UInt8]) {
         let passwordCString = password.cString(using: .utf8)
         let passwordLength = password.lengthOfBytes(using: .utf8)
         let saltCString = context.salt.cString(using: .utf8)
         let saltLength = context.salt.lengthOfBytes(using: .utf8)
         let length = context.hashLength
-        var result = UnsafeMutablePointer<UInt8>.allocate(capacity: length)
+        let result = UnsafeMutablePointer<UInt8>.allocate(capacity: length)
         var errorCode: CInt
         switch context.mode {
         case .argon2d:
             errorCode = argon2d_hash_raw(UInt32(context.iterations), UInt32(context.memory), UInt32(context.parallelism), passwordCString,
-                                             passwordLength, saltCString, saltLength, &result, length)
+                                         passwordLength, saltCString, saltLength, result, length)
         case .argon2i:
             errorCode = argon2i_hash_raw(UInt32(context.iterations), UInt32(context.memory), UInt32(context.parallelism), passwordCString,
-                                             passwordLength, saltCString, saltLength, &result, length)
+                                         passwordLength, saltCString, saltLength, result, length)
         case .argon2id:
             errorCode = argon2id_hash_raw(UInt32(context.iterations), UInt32(context.memory), UInt32(context.parallelism), passwordCString,
-                                              passwordLength, saltCString, saltLength, &result, length)
+                                          passwordLength, saltCString, saltLength, result, length)
         }
-        return (errorCode, Array(UnsafeBufferPointer(start: result, count: length)))
+        let buffer = UnsafeBufferPointer(start: result, count: length)
+        let res = Array(buffer)
+        return (errorCode, res)
     }
-
+    
     /// Verify with Argon2 function.
     ///
     /// - Parameters:
@@ -196,18 +198,19 @@ public class CatArgon2Crypto: Contextual, Hashing, Verification {
         case .argon2id: return argon2id_verify(hash.cString(using: .utf8), password.cString(using: .utf8), passwordLength)
         }
     }
-
+    
     // MARK: - Hashing
     public func hash(password: String) -> CatCryptoResult {
         return hash(password: password, encoded: true)
     }
-
+    
     public func hash(password: String, encoded: Bool) -> CatCryptoResult {
         var result: (errorCode: Int32, output: [UInt8])
         if encoded == false {
             result = argon2Hash_raw(password: password)
+        } else {
+            result = argon2Hash(password: password)
         }
-        result = argon2Hash(password: password)
         if result.errorCode == 0 {
             return CatCryptoResult(raw: result.output)
         } else {
@@ -215,7 +218,7 @@ public class CatArgon2Crypto: Contextual, Hashing, Verification {
                                                          errorDescription: String(cString: argon2_error_message(result.errorCode))))
         }
     }
-
+    
     // MARK: - Verification
     public func verify(hash: String, password: String) -> CatCryptoResult {
         let errorCode = argon2Verify(hash: hash, password: password)
@@ -226,5 +229,5 @@ public class CatArgon2Crypto: Contextual, Hashing, Verification {
                                                                      errorDescription: String(cString: argon2_error_message(errorCode))))
         }
     }
-
+    
 }
