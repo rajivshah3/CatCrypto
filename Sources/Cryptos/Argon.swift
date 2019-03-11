@@ -159,6 +159,28 @@ public class CatArgon2Crypto: Contextual, Hashing, Verification {
         return (errorCode, result.map { UInt8($0) })
     }
 
+    func argon2Hash_raw(password: String) -> (errorCode: Int32, output: [UInt8]) {
+        let passwordCString = password.cString(using: .utf8)
+        let passwordLength = password.lengthOfBytes(using: .utf8)
+        let saltCString = context.salt.cString(using: .utf8)
+        let saltLength = context.salt.lengthOfBytes(using: .utf8)
+        let length = context.hashLength
+        var result = UnsafeMutablePointer<UInt8>.allocate(capacity: length)
+        var errorCode: CInt
+        switch context.mode {
+        case .argon2d:
+            errorCode = argon2d_hash_raw(UInt32(context.iterations), UInt32(context.memory), UInt32(context.parallelism), passwordCString,
+                                             passwordLength, saltCString, saltLength, &result, length)
+        case .argon2i:
+            errorCode = argon2i_hash_raw(UInt32(context.iterations), UInt32(context.memory), UInt32(context.parallelism), passwordCString,
+                                             passwordLength, saltCString, saltLength, &result, length)
+        case .argon2id:
+            errorCode = argon2id_hash_raw(UInt32(context.iterations), UInt32(context.memory), UInt32(context.parallelism), passwordCString,
+                                              passwordLength, saltCString, saltLength, &result, length)
+        }
+        return (errorCode, Array(UnsafeBufferPointer(start: result, count: length)))
+    }
+
     /// Verify with Argon2 function.
     ///
     /// - Parameters:
@@ -177,7 +199,15 @@ public class CatArgon2Crypto: Contextual, Hashing, Verification {
 
     // MARK: - Hashing
     public func hash(password: String) -> CatCryptoResult {
-        let result = argon2Hash(password: password)
+        return hash(password: password, encoded: true)
+    }
+
+    public func hash(password: String, encoded: Bool) -> CatCryptoResult {
+        var result: (errorCode: Int32, output: [UInt8])
+        if encoded == false {
+            result = argon2Hash_raw(password: password)
+        }
+        result = argon2Hash(password: password)
         if result.errorCode == 0 {
             return CatCryptoResult(raw: result.output)
         } else {
